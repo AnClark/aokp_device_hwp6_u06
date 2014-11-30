@@ -1,0 +1,33 @@
+From fc085395101d1d1fea8c415de54db81d3f862c16 Mon Sep 17 00:00:00 2001
+From: toliao <jsegoviapoveda@gmail.com>
+Date: Wed, 26 Nov 2014 10:30:13 +0100
+Subject: [PATCH] external_skia_include_core_skbitmap_h
+
+Change-Id: Id1104bc73ce7f904c2e46d76d695106109521243
+---
+ include/core/SkBitmap.h | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/include/core/SkBitmap.h b/include/core/SkBitmap.h
+index 9d29b8d..b9bd66a 100644
+--- a/include/core/SkBitmap.h
++++ b/include/core/SkBitmap.h
+@@ -248,11 +248,14 @@ public:
+     */
+     bool setConfig(Config, int width, int height, size_t rowBytes, SkAlphaType);
+ 
++#ifdef USE_K3V2OEM1
++    bool setConfig(Config config, int width, int height, size_t rowBytes = 0);
++#else
+     bool setConfig(Config config, int width, int height, size_t rowBytes = 0) {
+         return this->setConfig(config, width, height, rowBytes,
+                                kPremul_SkAlphaType);
+     }
+-
++#endif
+     bool setConfig(const SkImageInfo& info, size_t rowBytes = 0);
+ 
+     /**
+-- 
+1.9.1
+

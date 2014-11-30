@@ -1,0 +1,300 @@
+From b054f17e3d1ef8393c8f839598d5c71078d7c963 Mon Sep 17 00:00:00 2001
+From: toliao <jsegoviapoveda@gmail.com>
+Date: Sun, 30 Nov 2014 02:49:03 +0100
+Subject: [PATCH] BIG PATCH
+
+Change-Id: Ia73a515bf2945c24d4ec8d770f16e3f5bb813c0b
+---
+ include/gui/BufferQueue.h                          |  4 ++-
+ include/gui/IGraphicBufferProducer.h               |  4 ++-
+ include/gui/Surface.h                              | 12 ++++++-
+ libs/gui/BufferQueue.cpp                           |  4 ++-
+ libs/gui/IGraphicBufferProducer.cpp                |  8 +++--
+ libs/gui/Surface.cpp                               | 41 ++++++++++++++++++++--
+ .../DisplayHardware/VirtualDisplaySurface.cpp      |  4 ++-
+ .../DisplayHardware/VirtualDisplaySurface.h        |  4 ++-
+ 8 files changed, 70 insertions(+), 11 deletions(-)
+
+diff --git a/include/gui/BufferQueue.h b/include/gui/BufferQueue.h
+index 942a091..dc25a0f 100644
+--- a/include/gui/BufferQueue.h
++++ b/include/gui/BufferQueue.h
+@@ -207,13 +207,15 @@ public:
+     // connected to the specified producer API.
+     virtual status_t disconnect(int api);
+ 
+-#ifdef QCOM_HARDWARE
+     // setBufferSize enables us to specify user defined sizes for the buffers
+     // that need to be allocated by surfaceflinger for its client. This is
+     // useful for cases where the client doesn't want the gralloc to calculate
+     // buffer size. client should reset this value to 0, if it wants gralloc
+     // to calculate the size for the buffer. this will take effect from next
+     // dequeue buffer.
++#ifdef USE_K3V2OEM1
++
++#else
+     virtual status_t setBuffersSize(int size);
+ #endif
+ 
+diff --git a/include/gui/IGraphicBufferProducer.h b/include/gui/IGraphicBufferProducer.h
+index f3bf177..d15679b 100644
+--- a/include/gui/IGraphicBufferProducer.h
++++ b/include/gui/IGraphicBufferProducer.h
+@@ -238,13 +238,15 @@ public:
+     // connected to the specified client API.
+     virtual status_t disconnect(int api) = 0;
+ 
+-#ifdef QCOM_HARDWARE
+     // setBufferSize enables to specify the user defined size of the buffer
+     // that needs to be allocated by surfaceflinger for its client. This is
+     // useful for cases where the client doesn't want the gralloc to calculate
+     // buffer size. client should reset this value to 0, if it wants gralloc to
+     // calculate the size for the buffer. this will take effect from next
+     // dequeue buffer.
++#ifdef USE_K3V2OEM1
++
++#else
+     virtual status_t setBuffersSize(int size) = 0;
+ #endif
+ 
+diff --git a/include/gui/Surface.h b/include/gui/Surface.h
+index a8fd7d1..9e320fe 100644
+--- a/include/gui/Surface.h
++++ b/include/gui/Surface.h
+@@ -125,7 +125,11 @@ private:
+     int dispatchSetCrop(va_list args);
+     int dispatchSetPostTransformCrop(va_list args);
+     int dispatchSetUsage(va_list args);
++#ifdef USE_K3V2OEM1
++
++#else
+     int dispatchSetBuffersSize(va_list args);
++#endif
+     int dispatchLock(va_list args);
+     int dispatchUnlockAndPost(va_list args);
+ 
+@@ -150,7 +154,9 @@ protected:
+     virtual int setBuffersTimestamp(int64_t timestamp);
+     virtual int setCrop(Rect const* rect);
+     virtual int setUsage(uint32_t reqUsage);
+-#ifdef QCOM_HARDWARE
++#ifdef USE_K3V2OEM1
++
++#else
+     virtual int setBuffersSize(int size);
+ #endif
+ 
+@@ -203,7 +209,11 @@ private:
+ 
+     // mReqSize is the size of the buffer that will be requested
+     // at the next dequeue operation. It is initialized to 0.
++#ifdef USE_K3V2OEM1
++
++#else
+     uint32_t mReqSize;
++#endif
+ 
+     // mTimestamp is the timestamp that will be used for the next buffer queue
+     // operation. It defaults to NATIVE_WINDOW_TIMESTAMP_AUTO, which means that
+diff --git a/libs/gui/BufferQueue.cpp b/libs/gui/BufferQueue.cpp
+index 146f534..ca8546e 100644
+--- a/libs/gui/BufferQueue.cpp
++++ b/libs/gui/BufferQueue.cpp
+@@ -191,7 +191,9 @@ status_t BufferQueue::setBufferCount(int bufferCount) {
+     return NO_ERROR;
+ }
+ 
+-#ifdef QCOM_HARDWARE
++#ifdef USE_K3V2OEM1
++
++#else
+ status_t BufferQueue::setBuffersSize(int size) {
+     ST_LOGV("setBuffersSize: size=%d", size);
+     Mutex::Autolock lock(mMutex);
+diff --git a/libs/gui/IGraphicBufferProducer.cpp b/libs/gui/IGraphicBufferProducer.cpp
+index 0a78fd9..23851f3 100644
+--- a/libs/gui/IGraphicBufferProducer.cpp
++++ b/libs/gui/IGraphicBufferProducer.cpp
+@@ -181,7 +181,9 @@ public:
+         return result;
+     }
+ 
+-#ifdef QCOM_HARDWARE
++#ifdef USE_K3V2OEM1
++
++#else
+     virtual status_t setBuffersSize(int size) {
+         Parcel data, reply;
+         data.writeInterfaceToken(IGraphicBufferProducer::getInterfaceDescriptor());
+@@ -270,7 +272,9 @@ status_t BnGraphicBufferProducer::onTransact(
+             reply->writeInt32(res);
+             return NO_ERROR;
+         } break;
+-#ifdef QCOM_HARDWARE
++#ifdef USE_K3V2OEM1
++
++#else
+         case SET_BUFFERS_SIZE: {
+             CHECK_INTERFACE(IGraphicBufferProducer, data, reply);
+             int size = data.readInt32();
+diff --git a/libs/gui/Surface.cpp b/libs/gui/Surface.cpp
+index f5276a2..4245c6e 100644
+--- a/libs/gui/Surface.cpp
++++ b/libs/gui/Surface.cpp
+@@ -65,7 +65,11 @@ Surface::Surface(
+     mReqHeight = 0;
+     mReqFormat = 0;
+     mReqUsage = 0;
++#ifdef USE_K3V2OEM1
++
++#else
+     mReqSize = 0;
++#endif
+     mTimestamp = NATIVE_WINDOW_TIMESTAMP_AUTO;
+     mCrop.clear();
+ #ifdef QCOM_BSP
+@@ -394,6 +398,9 @@ int Surface::query(int what, int* value) const {
+                 }
+                 return err;
+             }
++#ifdef USE_K3V2OEM1
++
++#else
+             case NATIVE_WINDOW_CONSUMER_USAGE_BITS: {
+                 status_t err = NO_ERROR;
+                 err = mGraphicBufferProducer->query(what, value);
+@@ -404,6 +411,7 @@ int Surface::query(int what, int* value) const {
+                     return err;
+                 }
+             }
++#endif
+         }
+     }
+     return mGraphicBufferProducer->query(what, value);
+@@ -446,7 +454,9 @@ int Surface::perform(int operation, va_list args)
+     case NATIVE_WINDOW_SET_BUFFERS_FORMAT:
+         res = dispatchSetBuffersFormat(args);
+         break;
+-#ifdef QCOM_HARDWARE
++#ifdef USE_K3V2OEM1
++
++#else
+     case NATIVE_WINDOW_SET_BUFFERS_SIZE:
+         res = dispatchSetBuffersSize(args);
+         break;
+@@ -526,7 +536,9 @@ int Surface::dispatchSetBuffersFormat(va_list args) {
+     return setBuffersFormat(f);
+ }
+ 
+-#ifdef QCOM_HARDWARE
++#ifdef USE_K3V2OEM1
++
++#else
+ int Surface::dispatchSetBuffersSize(va_list args) {
+     int size = va_arg(args, int);
+     return setBuffersSize(size);
+@@ -590,7 +602,11 @@ int Surface::disconnect(int api) {
+         mReqWidth = 0;
+         mReqHeight = 0;
+         mReqUsage = 0;
++#ifdef USE_K3V2OEM1
++
++#else
+         mReqSize = 0;
++#endif
+         mCrop.clear();
+         mScalingMode = NATIVE_WINDOW_SCALING_MODE_FREEZE;
+         mTransform = 0;
+@@ -691,7 +707,9 @@ int Surface::setBuffersFormat(int format)
+     return NO_ERROR;
+ }
+ 
+-#ifdef QCOM_HARDWARE
++#ifdef USE_K3V2OEM1
++
++#else
+ int Surface::setBuffersSize(int size)
+ {
+     ATRACE_CALL();
+@@ -859,7 +877,11 @@ status_t Surface::lock(
+         }
+ 
+         // figure out if we can copy the frontbuffer back
++#ifdef USE_K3V2OEM1
++
++#else
+         int backBufferSlot(getSlotFromBufferLocked(backBuffer.get()));
++#endif
+         const sp<GraphicBuffer>& frontBuffer(mPostedBuffer);
+         const bool canCopyBack = (frontBuffer != 0 &&
+                 backBuffer->width  == frontBuffer->width &&
+@@ -867,6 +889,9 @@ status_t Surface::lock(
+                 backBuffer->format == frontBuffer->format);
+ 
+         if (canCopyBack) {
++#ifdef USE_K3V2OEM1
++	    const Region copyback(mDirtyRegion.subtract(newDirtyRegion));
++#else
+             Mutex::Autolock lock(mMutex);
+             Region oldDirtyRegion;
+             for(int i = 0 ; i < NUM_BUFFER_SLOTS; i++ ) {
+@@ -874,6 +899,7 @@ status_t Surface::lock(
+                     oldDirtyRegion.orSelf(mSlots[i].dirtyRegion);
+             }
+             const Region copyback(oldDirtyRegion.subtract(newDirtyRegion));
++#endif
+             if (!copyback.isEmpty())
+                 copyBlt(backBuffer, frontBuffer, copyback);
+         } else {
+@@ -889,9 +915,18 @@ status_t Surface::lock(
+ 
+         { // scope for the lock
+             Mutex::Autolock lock(mMutex);
++#ifdef USE_K3V2OEM1
++	int backBufferSlot(getSlotFromBufferLocked(backBuffer.get()));
++	if (backBufferSlot >= 0) {
++	Region& dirtyRegion(mSlots[backBufferSlot].dirtyRegion);
++	mDirtyRegion.subtract(dirtyRegion);
++	dirtyRegion = newDirtyRegion;
++	}
++#else
+             if (backBufferSlot >= 0) {
+                mSlots[backBufferSlot].dirtyRegion = newDirtyRegion;
+             }
++#endif
+         }
+ 
+         if (inOutDirtyBounds) {
+diff --git a/services/surfaceflinger/DisplayHardware/VirtualDisplaySurface.cpp b/services/surfaceflinger/DisplayHardware/VirtualDisplaySurface.cpp
+index c138f6a..68435f5 100644
+--- a/services/surfaceflinger/DisplayHardware/VirtualDisplaySurface.cpp
++++ b/services/surfaceflinger/DisplayHardware/VirtualDisplaySurface.cpp
+@@ -447,7 +447,9 @@ status_t VirtualDisplaySurface::disconnect(int api) {
+     return mSource[SOURCE_SINK]->disconnect(api);
+ }
+ 
+-#ifdef QCOM_HARDWARE
++#ifdef USE_K3V2OEM1
++
++#else
+ status_t VirtualDisplaySurface::setBuffersSize(int size) {
+    return mSource[SOURCE_SINK]->setBuffersSize(size);
+ }
+diff --git a/services/surfaceflinger/DisplayHardware/VirtualDisplaySurface.h b/services/surfaceflinger/DisplayHardware/VirtualDisplaySurface.h
+index d1a5897..b874179 100644
+--- a/services/surfaceflinger/DisplayHardware/VirtualDisplaySurface.h
++++ b/services/surfaceflinger/DisplayHardware/VirtualDisplaySurface.h
+@@ -105,7 +105,9 @@ private:
+     virtual status_t connect(const sp<IBinder>& token,
+             int api, bool producerControlledByApp, QueueBufferOutput* output);
+     virtual status_t disconnect(int api);
+-#ifdef QCOM_HARDWARE
++#ifdef USE_K3V2OEM1
++
++#else
+     virtual status_t setBuffersSize(int size);
+ #endif
+ 
+-- 
+1.9.1
+

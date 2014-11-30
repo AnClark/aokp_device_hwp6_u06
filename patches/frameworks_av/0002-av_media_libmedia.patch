@@ -1,0 +1,28 @@
+From 4ec595265889c3a00bd0cf51c0098ff1a493253a Mon Sep 17 00:00:00 2001
+From: toliao <jsegoviapoveda@gmail.com>
+Date: Tue, 25 Nov 2014 23:50:39 +0100
+Subject: [PATCH] av_media_libmedia
+
+Change-Id: I7727c75ddb0e064a0b172298f1edf1c1f6ae39ec
+---
+ media/libmedia/AudioSystem.cpp | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/media/libmedia/AudioSystem.cpp b/media/libmedia/AudioSystem.cpp
+index b0688e7..9e50273 100644
+--- a/media/libmedia/AudioSystem.cpp
++++ b/media/libmedia/AudioSystem.cpp
+@@ -845,4 +845,10 @@ extern "C" bool _ZN7android11AudioSystem17isSeparatedStreamE19audio_stream_type_
+ }
+ #endif // USE_SAMSUNG_SEPARATEDSTREAM
+ 
++#ifdef USE_K3V2OEM1
++extern "C" void _ZN7android11AudioSystem11setFmVolumeEf()
++{
++}
++#endif
++
+ }; // namespace android
+-- 
+1.9.1
+

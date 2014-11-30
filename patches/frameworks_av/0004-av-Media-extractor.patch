@@ -1,0 +1,76 @@
+From 52940a74fae8328b8adead96026c215beaf0a2c1 Mon Sep 17 00:00:00 2001
+From: toliao <jsegoviapoveda@gmail.com>
+Date: Sun, 30 Nov 2014 02:05:47 +0100
+Subject: [PATCH] av Media extractor
+
+Change-Id: I2aabf5bcab909ec34cb61150ed1c6f0f40e30c3c
+---
+ media/libstagefright/MediaExtractor.cpp | 21 +++++++++++++++++++++
+ 1 file changed, 21 insertions(+)
+
+diff --git a/media/libstagefright/MediaExtractor.cpp b/media/libstagefright/MediaExtractor.cpp
+index c90937e..3b20d74 100755
+--- a/media/libstagefright/MediaExtractor.cpp
++++ b/media/libstagefright/MediaExtractor.cpp
+@@ -60,15 +60,28 @@ sp<MediaExtractor> MediaExtractor::Create(
+         const sp<DataSource> &source, const char *mime) {
+     sp<AMessage> meta;
+ 
++#ifdef USE_K3V2OEM1
++
++#else
+     bool secondPass = false;
++#endif
+ 
+     String8 tmp;
++#ifdef USE_K3V2OEM1
++    if (mime == NULL) {
++#else
+ retry:
+     if (secondPass || mime == NULL) {
++#endif
++
++#ifdef USE_K3V2OEM1
++        float confidence;
++#else
+         float confidence;
+         if (secondPass) {
+             confidence = 3.14f;
+         }
++#endif
+         if (!source->sniff(&tmp, &confidence, &meta)) {
+             ALOGV("FAILED to autodetect media content.");
+ 
+@@ -103,7 +116,11 @@ retry:
+     }
+ 
+     AString extractorName;
++#ifdef USE_K3V2OEM1
++    MediaExtractor *ret = NULL;
++#else
+     sp<MediaExtractor> ret = NULL;
++#endif
+     if (meta.get() && meta->findString("extended-extractor-use", &extractorName)
+             && sPlugin.create) {
+         ALOGI("Use extended extractor for the special mime(%s) or codec", mime);
+@@ -149,6 +166,9 @@ retry:
+     ret = ExtendedUtils::MediaExtractor_CreateIfNeeded(ret, source, mime);
+ #endif
+ 
++#ifdef USE_K3V2OEM1
++    return ret;
++#else
+     if (ret != NULL) {
+ 
+         if (!(!strcasecmp(mime, MEDIA_MIMETYPE_CONTAINER_MPEG4) &&
+@@ -161,6 +181,7 @@ retry:
+     }
+ 
+     return ret;
++#endif
+ }
+ 
+ }  // namespace android
+-- 
+1.9.1
+

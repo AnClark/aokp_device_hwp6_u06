@@ -1,0 +1,70 @@
+From ae46de781e01f204ddbaac1e4cb738a817583c6a Mon Sep 17 00:00:00 2001
+From: toliao <jsegoviapoveda@gmail.com>
+Date: Thu, 27 Nov 2014 10:36:00 +0100
+Subject: [PATCH] av_include_media_stagefright_datasource_h
+
+Change-Id: Ib4fadcfcde9732fa83cc4ab545e7d5b00b23d503
+---
+ include/media/stagefright/DataSource.h | 21 +++++++++++++++++++++
+ 1 file changed, 21 insertions(+)
+
+diff --git a/include/media/stagefright/DataSource.h b/include/media/stagefright/DataSource.h
+index 24ca89d..5c18233 100644
+--- a/include/media/stagefright/DataSource.h
++++ b/include/media/stagefright/DataSource.h
+@@ -32,6 +32,10 @@ namespace android {
+ 
+ struct AMessage;
+ class String8;
++
++#ifdef USE_K3V2OEM1
++
++#else
+ class DataSource;
+ 
+ class Sniffer : public RefBase {
+@@ -66,6 +70,7 @@ private:
+     Sniffer(const Sniffer &);
+     Sniffer &operator=(const Sniffer &);
+ };
++#endif
+ 
+ class DataSource : public RefBase {
+ public:
+@@ -81,7 +86,11 @@ public:
+             const char *uri,
+             const KeyedVector<String8, String8> *headers = NULL);
+ 
++#ifdef USE_K3V2OEM1
++    DataSource() { }
++#else
+     DataSource() { mSniffer = new Sniffer(); }
++#endif
+ 
+     virtual status_t initCheck() const = 0;
+ 
+@@ -132,9 +141,21 @@ public:
+ protected:
+     virtual ~DataSource() {}
+ 
++#ifdef USE_K3V2OEM1
++private:
++
++    static Mutex gSnifferMutex;
++    static List<SnifferFunc> gSniffers;
++    static bool gSniffersRegistered;
++
++    static void RegisterSniffer_l(SnifferFunc func);
++    static void RegisterSnifferPlugin();
++#else
++
+     sp<Sniffer> mSniffer;
+ 
+     static void RegisterSniffer_l(SnifferFunc func);
++#endif
+ 
+     DataSource(const DataSource &);
+     DataSource &operator=(const DataSource &);
+-- 
+1.9.1
+

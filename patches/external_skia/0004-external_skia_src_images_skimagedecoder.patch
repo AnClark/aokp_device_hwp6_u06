@@ -1,0 +1,107 @@
+From 3ceb7aa1508203774bd87a079ce4abf1a7692cab Mon Sep 17 00:00:00 2001
+From: toliao <jsegoviapoveda@gmail.com>
+Date: Thu, 27 Nov 2014 10:41:04 +0100
+Subject: [PATCH] external_skia_src_images_skimagedecoder
+
+Change-Id: I74a8d5dc4a7ff228f54dba9a932b1a5c9c2b32ac
+---
+ src/images/SkImageDecoder_libjpeg.cpp | 52 ++++++++++-------------------------
+ 1 file changed, 14 insertions(+), 38 deletions(-)
+
+diff --git a/src/images/SkImageDecoder_libjpeg.cpp b/src/images/SkImageDecoder_libjpeg.cpp
+index 39397d4..c359493 100644
+--- a/src/images/SkImageDecoder_libjpeg.cpp
++++ b/src/images/SkImageDecoder_libjpeg.cpp
+@@ -22,7 +22,6 @@
+ 
+ 
+ #include <stdio.h>
+-#include <dlfcn.h>
+ extern "C" {
+     #include "jpeglib.h"
+     #include "jerror.h"
+@@ -530,48 +529,11 @@ static bool get_src_config(const jpeg_decompress_struct& cinfo,
+     return true;
+ }
+ 
+-// vendor specific library for HW JPEG decode
+-static void *sVendorLibHandle = NULL;
+-typedef bool (*CanDecodeHwPtr)(void *, int);
+-typedef bool (*OnJpegDecodeHwPtr)(void *, void *, void *, void **);
+-static CanDecodeHwPtr sCanDecodeHw = NULL;
+-static OnJpegDecodeHwPtr sOnJpegDecodeHw = NULL;
+-
+ bool SkJPEGImageDecoder::onDecode(SkStream* stream, SkBitmap* bm, Mode mode) {
+ #ifdef TIME_DECODE
+     SkAutoTime atm("JPEG Decode");
+ #endif
+ 
+-    // use HW JPEG Decoder if available
+-    void *streamBuf = NULL;
+-    SkMemoryStream tempStream;
+-    int streamSize = stream->getLength();
+-
+-    if (!sVendorLibHandle)
+-        sVendorLibHandle = dlopen("libjpeghw.so", RTLD_NOW);
+-    if (sVendorLibHandle) {
+-        if (!sCanDecodeHw)
+-            sCanDecodeHw = (CanDecodeHwPtr)dlsym(sVendorLibHandle, "canDecodeHw");
+-        if (!sOnJpegDecodeHw)
+-            sOnJpegDecodeHw = (OnJpegDecodeHwPtr)dlsym(sVendorLibHandle, "onJpegDecodeHw");
+-
+-        if (sCanDecodeHw && sOnJpegDecodeHw) {
+-            // check if HW Decoding is possible
+-            if ((*sCanDecodeHw)(stream, (int)mode)) {
+-                // and then call HW Decoder
+-                if ((*sOnJpegDecodeHw)(this, stream, bm, &streamBuf)) {
+-                    return true;
+-                }
+-            }
+-        }
+-    }
+-
+-    // if HW JPEG decode failed then reset the stream
+-    if (streamBuf) {
+-        tempStream.setMemoryOwned(streamBuf, streamSize);
+-        stream = (SkStream *)&tempStream;
+-    }
+-
+     JPEGAutoClean autoClean;
+ 
+     jpeg_decompress_struct  cinfo;
+@@ -1168,9 +1130,19 @@ static WriteScanline ChooseWriter(const SkBitmap& bm) {
+     }
+ }
+ 
++#ifdef USE_K3V2OEM1
++class SkJPEGImageEncoder : public SkImageEncoder {
++protected:
++    virtual bool onEncode(SkWStream* stream, const SkBitmap& bm, int quality) SK_OVERRIDE;
++};
++
++bool SkJPEGImageEncoder::onEncode(SkWStream* stream, const SkBitmap& bm, int quality) {
++#else
+ class SkJPEGImageEncoder : public SkImageEncoder {
+ protected:
+     virtual bool onEncode(SkWStream* stream, const SkBitmap& bm, int quality) {
++#endif
++
+ #ifdef TIME_ENCODE
+         SkAutoTime atm("JPEG Encode");
+ #endif
+@@ -1239,8 +1211,12 @@ protected:
+         jpeg_destroy_compress(&cinfo);
+ 
+         return true;
++#ifdef USE_K3V2OEM1
++}
++#else
+     }
+ };
++#endif
+ 
+ ///////////////////////////////////////////////////////////////////////////////
+ DEFINE_DECODER_CREATOR(JPEGImageDecoder);
+-- 
+1.9.1
+

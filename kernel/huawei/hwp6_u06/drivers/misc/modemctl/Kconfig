@@ -1,5 +1,0 @@
-config MODEM_CONTROL
-    tristate "Modem Contrl Driver"
-	default y
-	help
-		Say Y to enable Modem Contrl Support

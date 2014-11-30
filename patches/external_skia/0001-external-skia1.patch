@@ -1,0 +1,55 @@
+From 977c4474d332d21625515c90890354ef18250fc3 Mon Sep 17 00:00:00 2001
+From: toliao <jsegoviapoveda@gmail.com>
+Date: Mon, 24 Nov 2014 23:52:53 +0100
+Subject: [PATCH] external skia1
+
+---
+ Android.mk | 11 ++++-------
+ 1 file changed, 4 insertions(+), 7 deletions(-)
+
+diff --git a/Android.mk b/Android.mk
+index b574ceb..9b12997 100644
+--- a/Android.mk
++++ b/Android.mk
+@@ -34,6 +34,10 @@ include $(CLEAR_VARS)
+ 
+ LOCAL_ARM_MODE := thumb
+ 
++ifeq ($(BOARD_USE_K3V2OEM1),true)
++LOCAL_CFLAGS += -DUSE_K3V2OEM1
++endif
++
+ # need a flag to tell the C side when we're on devices with large memory
+ # budgets (i.e. larger than the low-end devices that initially shipped)
+ ifeq ($(ARCH_ARM_HAVE_VFP),true)
+@@ -48,10 +52,6 @@ ifeq ($(ARCH_ARM_HAVE_NEON),true)
+ 	LOCAL_CFLAGS += -D__ARM_HAVE_NEON
+ endif
+ 
+-# Enable Neon assembler optimized version of S32A_Opaque_BlitRow32 and
+-# S32A_Blend_Blitrow32. Overrides the intrinsic blitter below.
+-LOCAL_CFLAGS += -DENABLE_OPTIMIZED_S32A_BLITTERS
+-
+ LOCAL_CFLAGS += -DDCT_IFAST_SUPPORTED
+ 
+ # using freetype's embolden allows us to adjust fake bold settings at
+@@ -527,8 +527,6 @@ ifneq ($(TARGET_HAVE_QC_PERF),true)
+ endif
+ 
+ LOCAL_SRC_FILES += \
+-	src/opts/S32A_Opaque_BlitRow32_neon.S \
+-	src/opts/S32A_Blend_BlitRow32_neon.S \
+ 	src/opts/memset16_neon.S \
+ 	src/opts/memset32_neon.S \
+ 	src/opts/SkBitmapProcState_arm_neon.cpp \
+@@ -564,7 +562,6 @@ endif
+ 
+ LOCAL_SHARED_LIBRARIES := \
+ 	liblog \
+-	libdl \
+ 	libcutils \
+ 	libft2 \
+ 	libjpeg \
+-- 
+1.9.1
+

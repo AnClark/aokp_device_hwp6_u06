@@ -1,0 +1,58 @@
+From 0cc4a4d8ef1b09b54a591306a5f8c17ad9881de1 Mon Sep 17 00:00:00 2001
+From: toliao <jsegoviapoveda@gmail.com>
+Date: Sun, 30 Nov 2014 02:33:44 +0100
+Subject: [PATCH] Base Camera java
+
+Change-Id: Ic3ee732762c8062bd8123276cf610f9cc300e6bc
+---
+ core/java/android/hardware/Camera.java | 27 +++++++++++++++++++++++++++
+ 1 file changed, 27 insertions(+)
+
+diff --git a/core/java/android/hardware/Camera.java b/core/java/android/hardware/Camera.java
+index 9961812..b71ab2b 100644
+--- a/core/java/android/hardware/Camera.java
++++ b/core/java/android/hardware/Camera.java
+@@ -167,6 +167,8 @@ public class Camera {
+     private AutoFocusCallback mAutoFocusCallback;
+     private AutoFocusMoveCallback mAutoFocusMoveCallback;
+     private OnZoomChangeListener mZoomListener;
++    private LcdCompensateCallback mLcdCompensateCallback;
++    private TargetTrackingCallback mTargetTrackingCallback;
+     private FaceDetectionListener mFaceListener;
+     private ErrorCallback mErrorCallback;
+     private boolean mOneShot;
+@@ -1446,6 +1448,31 @@ public class Camera {
+         mZoomListener = listener;
+     }
+ 
++/**************Fix Stock Huawei Ascend P6 Camera************/
++
++    public interface LcdCompensateCallback
++    {
++        void onLcdCompensateCallback(Camera camera);
++    };
++
++    public final void setLcdCompensateCallback(LcdCompensateCallback callback)
++    {
++	mLcdCompensateCallback = callback;
++    }
++
++
++    public interface TargetTrackingCallback
++    {
++        void onTargetTracking(int p1, int p2, Camera camera);
++    };
++
++    public final void setTargetTrackingCallback(TargetTrackingCallback callback)
++    {
++	mTargetTrackingCallback = callback;
++    }
++
++/**************End Huawei Ascend P6************/
++
+     /**
+      * Callback interface for face detected in the preview frame.
+      *
+-- 
+1.9.1
+
