@@ -115,6 +115,17 @@ PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/prebuilt/etc/vold.fstab:system/etc/vold.fstab
 
 PRODUCT_COPY_FILES += \
+    $(LOCAL_PATH)/prebuilt/lib/modules/cfg80211.ko:system/lib/modules/cfg80211.ko \
+    $(LOCAL_PATH)/prebuilt/lib/modules/compat.ko:system/lib/modules/compat.ko \
+    $(LOCAL_PATH)/prebuilt/lib/modules/mac80211.ko:system/lib/modules/mac80211.ko \
+    $(LOCAL_PATH)/prebuilt/lib/modules/sch_codel.ko:system/lib/modules/sch_codel.ko \
+    $(LOCAL_PATH)/prebuilt/lib/modules/sch_fq_codel.ko:system/lib/modules/sch_fq_codel.ko \
+    $(LOCAL_PATH)/prebuilt/lib/modules/wl18xx.ko:system/lib/modules/wl18xx.ko \
+    $(LOCAL_PATH)/prebuilt/lib/modules/wlcore.ko:system/lib/modules/wlcore.ko \
+    $(LOCAL_PATH)/prebuilt/lib/modules/wlcore_sdio.ko:system/lib/modules/wlcore_sdio.ko \
+    $(LOCAL_PATH)/prebuilt/lib/modules/wlcore_spi.ko:system/lib/modules/wlcore_spi.ko
+
+PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/prebuilt/usr/idc/hisik3_touchscreen.idc:system/usr/idc/hisik3_touchscreen.idc \
     $(LOCAL_PATH)/prebuilt/usr/idc/cyttsp4_mt.idc:system/usr/idc/cyttsp4_mt.idc \
     $(LOCAL_PATH)/prebuilt/usr/idc/k3_keypad.idc:system/usr/idc/k3_keypad.idc \
